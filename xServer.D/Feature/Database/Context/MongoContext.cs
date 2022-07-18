@@ -8,25 +8,25 @@ namespace x42.Feature.Database.Context
 {
     public class MongoContext : IMongoContext
     {
-        private IMongoDatabase Database { get; set; }
-        public IClientSessionHandle Session { get; set; }
-        public MongoClient MongoClient { get; set; }
+        private IMongoDatabase _database { get; set; }
+        public IClientSessionHandle _session { get; set; }
+        public MongoClient _mongoClient { get; set; }
         private readonly List<Func<Task>> _commands;
-        private readonly DatabaseSettings databaseSettings;
+        private readonly DatabaseSettings _databaseSettings;
 
         public MongoContext(DatabaseSettings databaseSettings)
         {
 
             // Every command will be stored and it'll be processed at SaveChanges
             _commands = new List<Func<Task>>();
-            this.databaseSettings = databaseSettings;
+            _databaseSettings = databaseSettings;
         }
 
         public async Task<int> SaveChanges()
         {
             ConfigureMongo();
 
-            using (Session = await MongoClient.StartSessionAsync())
+            using (_session = await _mongoClient.StartSessionAsync())
             {
                 var commandTasks = _commands.Select(c => c());
 
@@ -40,25 +40,25 @@ namespace x42.Feature.Database.Context
 
         private void ConfigureMongo()
         {
-            if (MongoClient != null)
+            if (_mongoClient != null)
             {
                 return;
             }
 
-            MongoClient = new MongoClient(this.databaseSettings.Mongoconnectionstring);
-            Database = MongoClient.GetDatabase(this.databaseSettings.MongoDbName);
+            _mongoClient = new MongoClient(_databaseSettings.Mongoconnectionstring);
+            _database = _mongoClient.GetDatabase(_databaseSettings.MongoDbName);
         }
 
         public IMongoCollection<T> GetCollection<T>(string name)
         {
             ConfigureMongo();
 
-            return Database.GetCollection<T>(name);
+            return _database.GetCollection<T>(name);
         }
 
         public void Dispose()
         {
-            Session?.Dispose();
+            _session?.Dispose();
             GC.SuppressFinalize(this);
         }
 
