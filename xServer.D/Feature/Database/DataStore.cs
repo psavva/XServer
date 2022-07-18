@@ -15,10 +15,10 @@ namespace x42.Feature.Database
     public class DataStore : IDataStore, IDisposable
     {
         /// <summary>Instance logger.</summary>
-        private readonly ILogger logger;
+        private readonly ILogger _logger;
 
         /// <summary>Instance logger.</summary>
-        private readonly DatabaseSettings databaseSettings;
+        private readonly DatabaseSettings _databaseSettings;
 
 
         public bool DatabaseConnected { get; set; } = false;
@@ -29,14 +29,14 @@ namespace x42.Feature.Database
 
         public DataStore(
             ILoggerFactory loggerFactory,
-            DatabaseSettings databaseSettings
-,
+            DatabaseSettings databaseSettings,
             IProfileReservationRepository profileReservationRepository)
         {
-            logger = loggerFactory.CreateLogger(GetType().FullName);
-            this.databaseSettings = databaseSettings;
-            xServerDictionary = new Dictionary(loggerFactory, databaseSettings);
+            _logger = loggerFactory.CreateLogger(GetType().FullName);
+            _databaseSettings = databaseSettings;
             _profileReservationRepository = profileReservationRepository;
+            xServerDictionary = new Dictionary(loggerFactory, databaseSettings);
+
         }
 
         public int GetIntFromDictionary(string key)
@@ -54,8 +54,6 @@ namespace x42.Feature.Database
             return xServerDictionary.Get<string>(key);
         }
 
- 
-
         public bool SetDictionaryValue(string key, object value)
         {
             return xServerDictionary.Set(key, value);
@@ -63,7 +61,7 @@ namespace x42.Feature.Database
 
         public int GetProfileReservationCountSearch(string name, string keyAddress)
         {
-            using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
             {
                 return dbContext.ProfileReservations.Where(p => p.Name == name || p.KeyAddress == keyAddress).Count();
             }
@@ -71,7 +69,7 @@ namespace x42.Feature.Database
 
         public int GetProfileReservationCountByName(string name)
         {
-            using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
             {
                 return dbContext.ProfileReservations.Where(p => p.Name == name).Count();
             }
@@ -79,7 +77,7 @@ namespace x42.Feature.Database
 
         public int GetProfileReservationCountByKeyAddress(string keyAddress)
         {
-            using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
             {
                 return dbContext.ProfileReservations.Where(p => p.KeyAddress == keyAddress).Count();
             }
@@ -87,7 +85,7 @@ namespace x42.Feature.Database
 
         public int GetProfileCountSearch(string name, string keyAddress)
         {
-            using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
             {
                 return dbContext.Profiles.Where(p => p.Name == name || p.KeyAddress == keyAddress).Count();
             }
@@ -95,7 +93,7 @@ namespace x42.Feature.Database
 
         public int GetProfileCountByName(string name)
         {
-            using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
             {
                 return dbContext.Profiles.Where(p => p.Name == name).Count();
             }
@@ -103,7 +101,7 @@ namespace x42.Feature.Database
 
         public int GetProfileCountByKeyAddress(string keyAddress)
         {
-            using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
             {
                 return dbContext.Profiles.Where(p => p.KeyAddress == keyAddress).Count();
             }
@@ -111,7 +109,7 @@ namespace x42.Feature.Database
 
         public List<ProfileData> GetFirstProfilesFromBlock(int fromBlock, int take)
         {
-            using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
             {
                 return dbContext.Profiles.Where(p => p.Status == (int)Profile.Status.Created && p.BlockConfirmed > fromBlock).OrderBy(p => p.BlockConfirmed).Take(take).ToList();
             }
@@ -119,7 +117,7 @@ namespace x42.Feature.Database
 
         public ProfileData GetProfileByKeyAddress(string keyAddress)
         {
-            using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
             {
                 return dbContext.Profiles.Where(n => n.KeyAddress == keyAddress).FirstOrDefault();
             }
@@ -127,7 +125,7 @@ namespace x42.Feature.Database
 
         public ProfileData GetProfileByName(string name)
         {
-            using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
             {
                 return dbContext.Profiles.Where(n => n.Name == name).FirstOrDefault();
             }
@@ -135,7 +133,7 @@ namespace x42.Feature.Database
 
         public ProfileReservationData GetProfileReservationByKeyAddress(string keyAddress)
         {
-            using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
             {
                 return dbContext.ProfileReservations.Where(n => n.KeyAddress == keyAddress).FirstOrDefault();
             }
@@ -143,7 +141,7 @@ namespace x42.Feature.Database
 
         public ProfileReservationData GetProfileReservationByName(string name)
         {
-            using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
             {
                 return dbContext.ProfileReservations.Where(n => n.Name == name).FirstOrDefault();
             }

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using x42.Configuration;
 using x42.ServerNode;
 using x42.Utilities;
-using System.Runtime.Serialization.Formatters;
+
 namespace x42.Feature.Database
 {
     /// <summary>
@@ -12,7 +12,7 @@ namespace x42.Feature.Database
     public class DatabaseSettings
     {
         /// <summary>Instance logger.</summary>
-        private readonly ILogger logger;
+        private readonly ILogger _logger;
 
         /// <summary>
         ///     Initializes an instance of the object from the node configuration.
@@ -22,15 +22,15 @@ namespace x42.Feature.Database
         {
             Guard.NotNull(serverSettings, nameof(serverSettings));
 
-            logger = serverSettings.LoggerFactory.CreateLogger(typeof(DatabaseSettings).FullName);
+            _logger = serverSettings.LoggerFactory.CreateLogger(typeof(DatabaseSettings).FullName);
 
             TextFileConfiguration config = serverSettings.ConfigReader;
 
             ConnectionString = config.GetOrDefault("connectionstring",
-                "User ID=postgres;Password=password;Host=localhost;Port=5432;Database=x42;", logger);
+                "User ID=postgres;Password=password;Host=localhost;Port=5432;Database=x42;", _logger);
 
-            Mongoconnectionstring = config.GetOrDefault("mongoconnectionstring","", logger);
-            MongoDbName = config.GetOrDefault("mongodbname", "", logger);
+            Mongoconnectionstring = config.GetOrDefault("mongoconnectionstring", "", _logger);
+            MongoDbName = config.GetOrDefault("mongodbname", "", _logger);
 
         }
 

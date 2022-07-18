@@ -25,10 +25,10 @@ namespace x42.Feature.Database
     public class DatabaseFeatures : ServerFeature
     {
         /// <summary>Instance logger.</summary>
-        private readonly ILogger logger;
+        private readonly ILogger _logger;
 
         /// <summary>Instance logger.</summary>
-        private readonly DatabaseSettings databaseSettings;
+        private readonly DatabaseSettings _databaseSettings;
 
         public IDataStore dataStore { get; set; }
 
@@ -45,8 +45,8 @@ namespace x42.Feature.Database
             IProfileReservationRepository profileReservationRepository
             )
         {
-            logger = loggerFactory.CreateLogger(GetType().FullName);
-            this.databaseSettings = databaseSettings;
+            _logger = loggerFactory.CreateLogger(GetType().FullName);
+            _databaseSettings = databaseSettings;
             _profileReservationRepository = profileReservationRepository;
             dataStore = new DataStore(loggerFactory, databaseSettings, _profileReservationRepository);
 
@@ -76,12 +76,12 @@ namespace x42.Feature.Database
         /// </summary>
         public void Connect()
         {
-            logger.LogInformation("Connected to database");
+            _logger.LogInformation("Connected to database");
         }
 
         public void Disconnect()
         {
-            logger.LogInformation("Disconnected from database");
+            _logger.LogInformation("Disconnected from database");
         }
 
         /// <inheritdoc />
@@ -89,21 +89,21 @@ namespace x42.Feature.Database
         {
             try
             {
-                using (X42DbContext dbContext = new X42DbContext(databaseSettings.ConnectionString))
+                using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
                 {
-                    logger.LogInformation("Connecting to database");
+                    _logger.LogInformation("Connecting to database");
 
                     dbContext.Database.Migrate();
 
                     DatabaseConnected = true;
 
-                    logger.LogInformation("Database Feature Initialized");
+                    _logger.LogInformation("Database Feature Initialized");
                 }
             }
             catch (Exception ex)
             {
-                logger.LogCritical("Database failed to Initialize.", ex);
-                logger.LogTrace("(-)[INITIALIZE_EXCEPTION]");
+                _logger.LogCritical("Database failed to Initialize.", ex);
+                _logger.LogTrace("(-)[INITIALIZE_EXCEPTION]");
             }
 
             return Task.CompletedTask;
@@ -118,7 +118,7 @@ namespace x42.Feature.Database
         /// <inheritdoc />
         public override void ValidateDependencies(IServerServiceProvider services)
         {
-            if (string.IsNullOrEmpty(databaseSettings.ConnectionString))
+            if (string.IsNullOrEmpty(_databaseSettings.ConnectionString))
             {
                 throw new ConfigurationException("Connection string is required.");
             }
@@ -149,9 +149,7 @@ namespace x42.Feature.Database
                         services.AddSingleton<DatabaseSettings>();
                         services.AddSingleton<IMongoContext, MongoContext>();
                         services.AddSingleton<IUnitOfWork, UnitOfWork>();
-
                         services.AddSingleton(typeof(IRepository<ProfileReservationData2>), typeof(MongoRepository<ProfileReservationData2>));
-
                         services.AddSingleton<IProfileReservationRepository, ProfileReservationRepository>();
                         services.AddSingleton<IProfileRepository, ProfileRepository>();
 
