@@ -46,7 +46,7 @@ namespace x42.Feature.PowerDns
 
         public async Task AddNewSubDomain(string name) { 
         
-            await _powerDnsRestClient.AddNewSubDomain(name);
+            await _powerDnsRestClient.AddNewWordpressPreviewSubDomain(name);
         
         }
 

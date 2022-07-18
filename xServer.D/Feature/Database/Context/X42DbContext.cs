@@ -39,8 +39,8 @@ namespace x42.Feature.Database.Context
                 .IsUnique();
 
             builder.Entity<DomainData>()
-                .HasIndex(p => new { p.KeyAddress })
-                .IsUnique();
+                .HasIndex(p => new { p.KeyAddress });
+ 
             builder.Entity<DomainData>()
                 .HasIndex(p => new { p.BlockConfirmed });
         }

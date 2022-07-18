@@ -28,11 +28,12 @@ namespace x42.Feature.PowerDns
 
         public override Task InitializeAsync()
         {
-             return Task.CompletedTask;
+            return Task.CompletedTask;
 
         }
 
-        public async Task<List<string>> GetWordPressPreviewDomains() {
+        public async Task<List<string>> GetWordPressPreviewDomains()
+        {
 
             return await _wordPressManager.GetWordPressPreviewDomains();
         }
@@ -42,15 +43,28 @@ namespace x42.Feature.PowerDns
             return await _wordPressManager.ReserveWordpressPreviewDNS(registerRequest);
         }
 
+        public async Task ProvisionWordPress(string subdomain)
+        {
+
+            await _wordPressManager.ProvisionWordPress(subdomain);
+
+        }
+
+
+        public List<string> GetWordpressRegisteredPreviewDomains() {
+
+            return _wordPressManager.GetWordpressRegisteredPreviewDomains();
+        }
+
         /// <inheritdoc />
         public override void ValidateDependencies(IServerServiceProvider services)
         {
-         
-         
+
+
         }
 
-      
-    }   
+
+    }
 
     public static class WordPressBuilderExtension
     {
@@ -81,6 +95,6 @@ namespace x42.Feature.PowerDns
             });
 
             return serverBuilder;
-        }      
+        }
     }
 }

@@ -111,6 +111,35 @@ namespace x42.Controllers.Public
             }
         }
 
+        [HttpPost]
+        [Route("provisionWordPress")]
+        public async Task<IActionResult> ProvisionWordPress([FromBody] ProvisionWordPressRequest request)
+        {
+            _xServer.Stats.IncrementPublicRequest();
+            if (_xServer.Stats.TierLevel == ServerNode.Tier.TierLevel.Two)
+            {
+                await _wordPressPreviewFeature.ProvisionWordPress(request.Subdomain);
+                return Ok();
+             }
+            else
+            {
+                return ErrorHelpers.BuildErrorResponse(HttpStatusCode.BadRequest, "Tier 2 requirement not meet", "The node you requested is not a tier 2 node.");
+            }
+        }
+
+        [HttpGet]
+        [Route("wordpressRegisteredPreviewDomains")]
+        public async Task<IActionResult> GetWordpressRegisteredPreviewDomains()
+        {
+            var domains =  _wordPressPreviewFeature.GetWordpressRegisteredPreviewDomains();
+            return Ok(domains);
+
+        }
+
+
+
+
+
         /// <summary>
         ///     Registers a servernode to the network.
         /// </summary>

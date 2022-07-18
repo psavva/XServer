@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Renci.SshNet;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace x42.Feature.WordPressPreview
         {
             try
             {
-            
+
                 var result = new List<string>();
 
                 for (int i = 0; i < 5; i++)
@@ -43,16 +44,16 @@ namespace x42.Feature.WordPressPreview
                     result.Add(RandName());
                 }
                 return await Task.FromResult(result);
-            
+
             }
             catch (Exception ex)
             {
- 
+
                 return null;
             }
         }
 
-  
+
 
         public async Task<WordpressDomainResult> ReserveWordpressPreviewDNS(WordPressReserveRequest registerRequest)
         {
@@ -63,7 +64,8 @@ namespace x42.Feature.WordPressPreview
             {
                 var hasEntry = dbContext.Domains.Where(l => l.Name == registerRequest.Name).Count() > 0;
 
-                if (hasEntry) {
+                if (hasEntry)
+                {
 
                     result.Success = false;
                     result.ResultMessage = "Domain Already Registered.";
@@ -113,7 +115,16 @@ namespace x42.Feature.WordPressPreview
                 var newRecord = dbContext.Domains.Add(newProfile);
                 if (newRecord.State == EntityState.Added)
                 {
-                    dbContext.SaveChanges();
+                    try
+                    {
+                        dbContext.SaveChanges();
+
+                    }
+                    catch (Exception e)
+                    {
+
+                        throw;
+                    }
                     result.PriceLockId = newPriceLock.PriceLockId;
                     result.Status = status;
                     result.Success = true;
@@ -131,7 +142,7 @@ namespace x42.Feature.WordPressPreview
                 await _powerDnsFeature.AddNewSubDomain(registerRequest.Name);
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
 
                 result.Success = false;
@@ -144,14 +155,107 @@ namespace x42.Feature.WordPressPreview
             return result;
         }
 
+        public async Task ProvisionWordPress(string subdomain)
+        {
+
+            try
+            {
+                using (var client = new SshClient("185.197.194.25", "root", "80Qb562c0e"))
+                {
+
+                    var email = "dimsavva@gmail.com";
+
+                    client.Connect();
+
+                    var commndList = new List<SshCommandModel>();
+
+                    commndList.Add(new SshCommandModel() { Command = "cd x42-Server-Deployment/wordpress", Description = "changing direc", Timeout = 1000 });
+
+                    commndList.Add(new SshCommandModel() { Command = "./deploy_site.sh wordpress " + subdomain + " " + email + " c89e78b0ee534b14bd7ae093388bfeb0 c89e78b0ee534b14bd7ae093388bfeb0", Description = "provisioning", Timeout = 38000 });
+
+                    InteractiveShellStream shell = new InteractiveShellStream(client.CreateShellStream("xterm-mono", 80, 24, 800, 600, 1000));
+                    Console.Write(shell.ReadWithTimeout(1000));
+
+
+
+                    if (client.IsConnected)
+                    {
+
+                        foreach (var command in commndList)
+                        {
+
+                            shell.WriteLine(command.Command);
+                            shell.ReadWithTimeout(command.Timeout);
+
+
+                        }
+
+                    }
+
+
+                }
+
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
+
+            await Task.CompletedTask;
+
+        }
+
+        public List<string> GetWordpressRegisteredPreviewDomains() {
+
+            var domains = new List<string>();
+
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
+            {
+                domains = dbContext.Domains.Select(l => l.Name).ToList();
+            }
+
+            return domains;
+            }
+
         private string RandName()
         {
             Random rand = new Random(DateTime.Now.Millisecond);
-            string[] color = new string[] { "blue", "red", "yellow", "orange", "green", "pink", "black", "white", "violet", "magenta", "brow", "golden" };
+            string[] color = new string[] { "blue", "red", "yellow", "orange", "green", "pink", "black", "white", "violet", "magenta", "brown", "golden" };
             string[] emotion = new string[] { "happy", "sad", "excited", "angry", "nervous", "amused", "anxious", "awkward", "calm", "confused", "joyful", "romantic", "surprised" };
             string[] animal = new string[] { "fox", "rabbit", "cow", "dog", "cat", "horse", "tiger", "lion", "shark", "wolf", "bear", "koala", "panda", "giraffe", "turtle", "deer", "cheetah" };
 
-            var name = emotion[rand.Next(0, emotion.Length - 1)] + "-" + color[rand.Next(0, color.Length - 1)] + "-" + animal[rand.Next(0, animal.Length - 1)] + "";
+            string domain = "x42.site";
+            using (X42DbContext dbContext = new X42DbContext(_databaseSettings.ConnectionString))
+            {
+                var x42sitecount = dbContext.Domains.Where(l => l.Name.Contains("x42.site")).Count();
+                var x42dashsitecount = dbContext.Domains.Where(l => l.Name.Contains("x-42.site")).Count();
+                var x42onlinecount = dbContext.Domains.Where(l => l.Name.Contains("x42.online")).Count();
+                var x42cloudcount = dbContext.Domains.Where(l => l.Name.Contains("x42.cloud")).Count();
+                var x42appcount = dbContext.Domains.Where(l => l.Name.Contains("x42.app")).Count();
+
+
+                if (x42dashsitecount < x42sitecount)
+                {
+                    domain = "x-42.site";
+                }
+
+                if (x42onlinecount < x42dashsitecount)
+                {
+                    domain = "x42.online";
+                }
+                if (x42cloudcount < x42onlinecount)
+                {
+                    domain = "x42.cloud";
+                }
+
+                if (x42appcount < x42cloudcount)
+                {
+                    domain = "x42.app";
+                }
+            }
+
+            var name = emotion[rand.Next(0, emotion.Length)] + "-" + color[rand.Next(0, color.Length)] + "-" + animal[rand.Next(0, animal.Length)] + "." + domain;
 
 
             return name;

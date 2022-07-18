@@ -45,48 +45,65 @@ namespace x42.Feature.PowerDns.PowerDnsClient
             }
         }
 
-        public async Task AddNewSubDomain(string subdomain)
+        public async Task AddNewWordpressPreviewSubDomain(string subdomain)
         {
+
+            var n1Host = "https://poweradmin.xserver.network";
+            var n1Key = "cmp4V1Z0MnprRVRMbE10";
+
+            var n3Host = "https://poweradmin2.xserver.network";
+            var n3Key = "VnpKOXJ6eUdMcHV2S3I1";
+
+            await AddNewSubDomain(subdomain, n1Host, n1Key);
+            await AddNewSubDomain(subdomain, n3Host, n3Key);
+
+        }
+
+        public async Task AddNewSubDomain(string subdomain, string host, string apiKey)
+        {
+            var domain = "x42.site";
+
+            if (subdomain.Contains("x-42.site"))
+            {
+                 domain = "x-42.site";
+            }
+
+            if (subdomain.Contains("x42.online"))
+            {
+                domain = "x42.online";
+            }
+            if (subdomain.Contains("x42.cloud"))
+            {
+                domain = "x42.cloud";
+            }
+            if (subdomain.Contains("x42.app"))
+            {
+                domain = "x42.app";
+            }
+
             try
             {
-                var client = new RestClient(_baseUrl);
-                var request = new RestRequest($"/api/v1/servers/localhost/zones/wordpresspreview.site", Method.Patch);
-                request.AddHeader("X-API-Key", _apiKey);
+                var client = new RestClient(host);
+                var request = new RestRequest($"/api/v1/servers/localhost/zones/"+domain, Method.Patch);
+                request.AddHeader("X-API-Key", apiKey);
                 request.AddHeader("content-type", "application/json");
 
-                var body = new DnsRequest() { Rrsets = new List<RRset>() { new RRset($"{subdomain}.wordpresspreview.site.", "REPLACE", 60, "A", "144.91.69.12") } };
+                var body = new DnsRequest() { Rrsets = new List<RRset>() { new RRset($"{subdomain}.", "REPLACE", 60, "A", "185.197.194.25") } };
 
-                var response = await client.ExecuteAsync(request);
                 request.AddBody(body);
+                var response = await client.ExecuteAsync(request);
+
 
             }
             catch (Exception ex)
             {
                 _logger.LogDebug($"An Error Occured When add subdomain!", ex);
 
-             }
-        }
-
-
-        private async Task PatchRecord(string zone, string value, string recordType, string content)
-        {
-            try
-            {
-                var client = new RestClient(_baseUrl);
-                var request = new RestRequest($"/api/v1/servers/localhost/zones/{zone}", Method.Patch);
-
-                request.AddHeader("X-API-Key", _apiKey);
-                request.AddBody(new RRset($"{zone}.{value}.", "REPLACE", 60, recordType, content));
- 
-                var response = await client.ExecuteAsync<List<ZoneModel>>(request);
-
-
             }
-            catch (Exception ex)
-            {
-                _logger.LogDebug($"An Error Occured When looking up zones!", ex);
-
-             }
         }
+
+ 
+
+     
     }
 }
