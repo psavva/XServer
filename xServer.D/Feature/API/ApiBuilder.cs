@@ -25,7 +25,6 @@ using x42.Feature.API;
 using x42.Feature.API.Requirements;
 using x42.Server;
 using x42.Utilities;
-using x42.Utilities.JsonConverters;
 
 namespace x42.Feature.Api
 {
@@ -101,9 +100,7 @@ namespace x42.Feature.Api
                 // add serializers for NBitcoin objects
                 .AddNewtonsoftJson(options =>
                 {
-
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-
 
                 })
                 .AddControllers(services);
